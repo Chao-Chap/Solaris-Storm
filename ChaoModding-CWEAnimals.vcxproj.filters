@@ -24,6 +24,12 @@
     <ClInclude Include="ModelInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Trampoline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemAccess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -38,5 +44,43 @@
     <ClCompile Include="ModelInfo.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="Trampoline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="titan.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="golem.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="taker.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="tricker.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="biter.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="stalker.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="crawler.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="gazer.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="iblis.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="mephilies.mini">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="solaris.mini">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

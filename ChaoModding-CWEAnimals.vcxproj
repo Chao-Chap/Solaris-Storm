@@ -24,6 +24,7 @@
     <ProjectGuid>{03f81b2c-0855-4bd9-88dd-8bd1c82820a0}</ProjectGuid>
     <RootNamespace>ChaoModdingCWEAnimals</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>iblisinvasion</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -140,8 +141,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="MemAccess.h" />
     <ClInclude Include="ModelInfo.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Trampoline.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -153,6 +156,20 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Trampoline.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="biter.mini" />
+    <None Include="crawler.mini" />
+    <None Include="gazer.mini" />
+    <None Include="golem.mini" />
+    <None Include="iblis.mini" />
+    <None Include="mephilies.mini" />
+    <None Include="solaris.mini" />
+    <None Include="stalker.mini" />
+    <None Include="taker.mini" />
+    <None Include="titan.mini" />
+    <None Include="tricker.mini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
