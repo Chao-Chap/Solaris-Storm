@@ -7,10 +7,52 @@ int stats[] = { 100, 40, 20, -20, -40, -100 };
 
 extern "C"
 {
+	//registering data functions. - Needs to exist.
+	void (*RegisterDataFunc)(void* ptr);
+	__declspec(dllexport) void(__cdecl* ALS_LensSpecial)(ObjectMaster*, ObjectMaster*);
+	NJS_TEXNAME SolEye[10];
+	NJS_TEXLIST Soleye_texlist = { arrayptrandlength(SolEye) };
+
+	NJS_TEXNAME MephEye[10];
+	NJS_TEXLIST Mepheye_texlist = { arrayptrandlength(MephEye) };
+	int SolarisLensID;
+	int MephLensID;
+
+	int WillEyeColorID;
+	int MephEyeColorID;
+	ModelInfo* MDLSolarisWill;
+	ModelInfo* MDLforeboding;
+	ModelInfo* MDLSolarisChao;
+
+	ModelInfo* MDLMephilesChao;
 	int mini_IblisID;
 	int mini_MephID;
 	int mini_SolarisID;
-	
+	static bool IblisChaoEvo(ObjectMaster* tp)
+	{
+
+		if (tp->Data1.Chao->ChaoDataBase_ptr->SA2BFaceType == mini_IblisID)
+			return true;
+		else
+			return false;
+	}
+	static bool MephilesChaoEvo(ObjectMaster* tp)
+	{
+		Uint8 eye_color = *(Uint8*)((int)(tp->Data1.Chao->ChaoDataBase_ptr) + 0x59A);
+		if (tp->Data1.Chao->ChaoDataBase_ptr->SA2BForeheadType == mini_MephID and eye_color == MephEyeColorID )
+			return true;
+		else
+			return false;
+	}
+	static bool SolarisChaoEvo(ObjectMaster* tp)
+	{
+		Uint8 eye_color = *(Uint8*)((int)(tp->Data1.Chao->ChaoDataBase_ptr) + 0x59A);
+		if (tp->Data1.Chao->ChaoDataBase_ptr->SA2BForeheadType == mini_SolarisID and eye_color == WillEyeColorID and (tp->Data1.Chao->ChaoDataBase_ptr->Reincarnations >= 2))
+
+			return true; 
+		else
+			return false;
+	}
 	struct al_entry_work
 	{
 		unsigned __int16 category;
@@ -31,7 +73,7 @@ extern "C"
 		al_entry_work* pCommu;
 		al_entry_work* pLockOn;
 	};
-	
+
 	const int GetChaoObjectPtr = 0x00530410;
 	ObjectMaster* GetChaoObject(int a1, int a2)
 	{
@@ -45,15 +87,16 @@ extern "C"
 		}
 		return val;
 	}
-	
+
 	DataArray(int, nbWorldEntry, 0x1DC0F80, 10);
 
-	FunctionPointer(ObjectMaster *, AL_MinimalExecutor_Load_, (Uint8 a1, NJS_VECTOR *a2, int a3, void *a4, int a5), 0x548D30);
+	FunctionPointer(ObjectMaster*, AL_MinimalExecutor_Load_, (Uint8 a1, NJS_VECTOR* a2, int a3, void* a4, int a5), 0x548D30);
 	ThiscallFunctionPointer(void*, AL_GetNewItemSaveInfo, (int a1), 0x52F9E0);
 
 	void __cdecl ALW_Control_Main_Hook(ObjectMaster* a1);
 	Trampoline ALW_Control_t(0x00530850, 0x00530859, ALW_Control_Main_Hook);
 	void __cdecl ALW_Control_Main_Hook(ObjectMaster* a1)
+
 	{
 		const auto original = reinterpret_cast<decltype(ALW_Control_Main_Hook)*>(ALW_Control_t.Target());
 		original(a1);
@@ -63,56 +106,58 @@ extern "C"
 			bool foundIblis = false;
 			bool foundMeph = false;
 			ObjectMaster* pIblis = NULL;
-			for(int i = 0; i < nbWorldEntry[2]; i++){
+			for (int i = 0; i < nbWorldEntry[2]; i++){
 				ObjectMaster* pAnimal = GetChaoObject(2, i);
-				if(!pAnimal) continue;
+				if (!pAnimal) continue;
 
-				if(pAnimal->Data1.Entity->Index == mini_IblisID) {
+				if (pAnimal->Data1.Entity->Index == mini_IblisID) {
 					foundIblis = true;
 					pIblis = pAnimal;
 				}
-				
-				if(pAnimal->Data1.Entity->Index == mini_MephID) {
+
+				if (pAnimal->Data1.Entity->Index == mini_MephID) {
 					foundMeph = true;
 				}
 
-				if(pAnimal->Data1.Entity->Index == mini_SolarisID) {
+				if (pAnimal->Data1.Entity->Index == mini_SolarisID) {
 					foundSolaris = true;
 					PlayJingle("chao_g_born_c.adx");
 				}
 			}
-			if(foundIblis && foundMeph && !foundSolaris) {
+			if (foundIblis && foundMeph && !foundSolaris) {
 				void* save = AL_GetNewItemSaveInfo(2);
-				if(save) {
-					NJS_VECTOR velo = {0, 0.25f, 0};
+				if (save) {
+					NJS_VECTOR velo = { 0, 0.25f, 0 };
 					AL_MinimalExecutor_Load_(
 						mini_SolarisID,
 						&pIblis->Data1.Entity->Position,
 						NJM_DEG_ANG(rand() * 360.f),
-						&velo,						
+						&velo,
 						(int)save
 					);
 				}
 			}
 		}
-	}	
-	
+	}
+
 	//initialization function - MUST exist in order to have CWE and SA2 see your mod
 
 	//Include your animal mod - use an include statement like above.
-	#include "taker.mini"
-	#include "golem.mini"
-	#include "tricker.mini"
-	#include "titan.mini"
-	#include "biter.mini"
-	#include "stalker.mini"
-	#include "crawler.mini"
-	#include "gazer.mini"
-	#include "iblis.mini"
-	#include "mephilies.mini"
-	#include "solaris.mini"
-	//registering data functions. - Needs to exist.
-	void (*RegisterDataFunc)(void* ptr);
+#include "taker.mini"
+#include "golem.mini"
+#include "tricker.mini"
+#include "titan.mini"
+#include "biter.mini"
+#include "stalker.mini"
+#include "crawler.mini"
+#include "gazer.mini"
+#include "iblis.mini"
+#include "mephilies.mini"
+#include "solaris.mini"
+
+
+
+	//Lens function - Needed for CWE to recognize the lens.
 
 	//NJS Type texture name and texture list. As is for old documentation.
 	NJS_TEXNAME IblisCoreTex[5];
@@ -129,12 +174,12 @@ extern "C"
 	BlackMarketItemAttributes BMMephFruit = { 500, 250, 0, -1, -1, 0 };
 
 	//Define Fruit Stats
-	
 
-	
+
+
 	ChaoItemStats IblisPower = { 10, 10, 50, 50, 50, 50, 50, 0, 0, 0 }; //mood, belly, swim, fly, run, power, stamina, luck, intel, unknown;
-	
-//Custom Fruit Function - Changes ChaoData Stats on the last bite of the fruit.
+
+	//Custom Fruit Function - Changes ChaoData Stats on the last bite of the fruit.
 	void __cdecl IblisLifespan(ChaoData* data, ObjectMaster* fruit)
 	{
 		// changed this from 0.1 to 10, 0.1 wouldnt do anything
@@ -145,13 +190,21 @@ extern "C"
 	//main CWE Load function -- Important stuff like adding your CWE mod goes here
 	void CWELoad(CWE_REGAPI* cwe_api)
 	{
+		cwe_api->RegisterChaoTexlistLoad("willofsolaris", &Soleye_texlist);
+		cwe_api->RegisterChaoTexlistLoad("forebodingshadow", &Mepheye_texlist);
 		ChaoItemStats ScepterFlux = { stats[rand() % LengthOfArray(stats)], stats[rand() % LengthOfArray(stats)], stats[rand() % LengthOfArray(stats)], stats[rand() % LengthOfArray(stats)], stats[rand() % LengthOfArray(stats)], stats[rand() % LengthOfArray(stats)], stats[rand() % LengthOfArray(stats)], stats[rand() % LengthOfArray(stats)], 50, 0 }; //mood, belly, swim, fly, run, power, stamina, luck, intel, unknown;
 		cwe_api->RegisterChaoTexlistLoad("IblisCoreTex", &Iblis_texlist);
 		cwe_api->RegisterChaoTexlistLoad("scepter", &Scepter_texlist);
 		//define the fruit so it's obtainable
-	
-		int IblisCoreID = cwe_api->RegisterChaoFruit(IblisCoreMDL->getmodel(), &Iblis_texlist , &IblisPower, &BMIblisFruit, IblisLifespan, "Iblis Core", "A core that summons the minions of the Iblis.");
-		int ScepterID = cwe_api->RegisterChaoFruit(ScepterMDL->getmodel(), &Scepter_texlist, &ScepterFlux, &BMMephFruit, 0 , "Scepter of Darkness", "A scepter said to hold dark power.");
+		BlackMarketItemAttributes BMSolLens = { 1000, 500, 0, -1, -1, 0 };
+		BlackMarketItemAttributes BMMephLens = { 1000, 500, 0, -1, -1, 0 };
+
+		int IblisCoreID = cwe_api->RegisterChaoFruit(IblisCoreMDL->getmodel(), &Iblis_texlist, &IblisPower, &BMIblisFruit, IblisLifespan, "Iblis Core", "A core that summons the minions of the Iblis.");
+		int ScepterID = cwe_api->RegisterChaoFruit(ScepterMDL->getmodel(), &Scepter_texlist, &ScepterFlux, &BMMephFruit, 0, "Scepter of Darkness", "A scepter said to hold dark power.");
+		//Register your lens to the black market:
+		MephLensID = cwe_api->RegisterChaoSpecial(MDLSolarisWill->getmodel(), &Soleye_texlist, &BMSolLens, ALS_LensSpecial, NULL, "The Will of Solaris", "The very will of an ancient god.", false);
+		MephLensID = cwe_api->RegisterChaoSpecial(MDLforeboding->getmodel(), &Mepheye_texlist, &BMMephLens, ALS_LensSpecial, NULL, "Foreboding Shadow", "A very eerie shadow", false);
+		
 		//define an ID for the animal, so that it can be registered to the fruit
 		int mini_TakerID = cwe_api->AddChaoMinimal(&taker_entry);
 		int mini_GolemID = cwe_api->AddChaoMinimal(&golem_entry);
@@ -165,23 +218,61 @@ extern "C"
 		mini_MephID = cwe_api->AddChaoMinimal(&mephilies_entry);
 		mini_SolarisID = cwe_api->AddChaoMinimal(&solaris_entry);
 
-			cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_TakerID, 0, 30);
-			cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_BiterID, 31, 54);
-			cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_GolemID, 75, 95);
-			cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_CrawlerID, 55, 75);
-			cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_IblisID, 95, 100);
+		cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_TakerID, 0, 30);
+		cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_BiterID, 31, 54);
+		cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_GolemID, 75, 95);
+		cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_CrawlerID, 55, 75);
+		cwe_api->RegisterChaoMinimalFruit(IblisCoreID, mini_IblisID, 95, 100);
 
-		
-	
-			cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_TrickerID, 0, 30);
-			cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_StalkerID, 31, 54);
-			cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_TitanID, 75, 95);
-			cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_GazerID, 55, 75);
-			cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_MephID, 95, 100);
+		//Associate the lens as a custom eye color:
+	WillEyeColorID = cwe_api->RegisterEyeColor("willofsolaris", &Soleye_texlist, SolarisLensID);
+	MephEyeColorID = cwe_api->RegisterEyeColor("forebodingshadow", &Mepheye_texlist, MephLensID);
 
-	
+		cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_TrickerID, 0, 30);
+		cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_StalkerID, 31, 54);
+		cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_TitanID, 75, 95);
+		cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_GazerID, 55, 75);
+		cwe_api->RegisterChaoMinimalFruit(ScepterID, mini_MephID, 95, 100);
 
+		CWE_API_CHAO_DATA CharChao_SolarisData =
+		{
+			MDLSolarisChao->getmodel(), //pObject
+			{ 0 },                        //pSecondEvoList[5]
+
+				"SolarisChao",              //TextureName
+				7,                          //TextureCount
+				0xFFE52932,                 //IconColor - hex, 4 bytes, 0xAARRGGBB
+				ICON_TYPE_BALL,             //IconType
+				NULL,                       //pIconData
+
+				SolarisChaoEvo,          //pEvolveFunc
+
+				0,                          //Flags
+				"Solaris Chao",             //Name
+				"SolarisChao",              //id
+		};
+		cwe_api->AddChaoType(&CharChao_SolarisData);
+
+		CWE_API_CHAO_DATA CharChao_MephData =
+		{
+			MDLMephilesChao->getmodel(), //pObject
+			{ 0 },                        //pSecondEvoList[5]
+
+				"MephChao",              //TextureName
+				7,                          //TextureCount
+				0x66C300FF,                 //IconColor - hex, 4 bytes, 0xAARRGGBB
+				ICON_TYPE_SPIKY,             //IconType
+				NULL,                       //pIconData
+
+				MephilesChaoEvo,          //pEvolveFunc
+
+				0,                          //Flags
+				"Mephiles Chao",             //Name
+				"mephmephChao",              //id
+		};
+		cwe_api->AddChaoType(&CharChao_MephData);
 	}
+
 
 	__declspec(dllexport) void Init(const char* path)
 	{
@@ -189,11 +280,18 @@ extern "C"
 		HMODULE h = GetModuleHandle(L"CWE");
 
 		std::string pathStr = std::string(path) + "\\";
-
+		//Lens function - This talks to CWE to get the lens to work when registering it as a special object.
+		ALS_LensSpecial = (decltype(ALS_LensSpecial))GetProcAddress(GetModuleHandle(L"CWE"), "ALS_LensSpecial");
 		//Tell what models need to be associated to their variables here.
+		MDLSolarisWill = new ModelInfo(pathStr + "willofsolaris.sa2mdl");
+		MDLforeboding = new ModelInfo(pathStr + "forebodingshadow.sa2mdl");
+
+
 		IblisCoreMDL = new ModelInfo(pathStr + "IblisCore.sa2mdl");
 		ScepterMDL = new ModelInfo(pathStr + "Scepter.sa2mdl");
 
+		MDLSolarisChao = new ModelInfo(pathStr + "SolarisChao.sa2mdl");
+		MDLMephilesChao = new ModelInfo(pathStr + "MephChao.sa2mdl");
 		RegisterDataFunc = (void (*)(void* ptr))GetProcAddress(h, "RegisterDataFunc");
 		RegisterDataFunc(CWELoad);
 	}
